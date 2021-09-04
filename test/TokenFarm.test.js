@@ -99,6 +99,44 @@ contract("TokenFarm", ([owner, investor]) => {
         "true",
         "investor staking status correct after staking"
       );
+
+      // Issue Tokens
+      await tokenFarm.issueTokens({ from: owner });
+
+      // Check balances after issuance
+      result = await dappToken.balanceOf(investor);
+      assert.equal(
+        result.toString(),
+        tokens(ONE_HUNDRED),
+        "investor DApp Token wallet balance correct after issuance"
+      );
+
+      // Ensure that only owner can issue tokens
+      await tokenFarm.issueTokens({ from: investor }).should.be.rejected;
+
+      // Unstake tokens
+      await tokenFarm.unstakeTokens({ from: investor });
+      // Check results after unstaking
+      result = await daiToken.balanceOf(investor);
+      assert.equal(
+        result.toString(),
+        tokens(ONE_HUNDRED),
+        "investor Mock DAI wallet balance correct after unstaking"
+      );
+
+      result = await daiToken.balanceOf(tokenFarm.address);
+      assert.equal(
+        result.toString(),
+        tokens("0"),
+        "Token Farm Mock DAI balance correct after unstaking"
+      );
+
+      result = await tokenFarm.stakingBalance(investor);
+      assert.equal(
+        result.toString(),
+        tokens("0"),
+        "investor staking balance correct after unstaking"
+      );
     });
   });
 });
